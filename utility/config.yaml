@@ -1,0 +1,6 @@
+file:
+  inputFilepath: 'words.txt'
+  outputFilepath: '../input/input.txt'
+parameters:
+  bankSize: 100
+  outputSize: 10000
