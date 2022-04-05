@@ -1,4 +1,4 @@
 .SUFFIXES: .cu
 
-main: 
+main: *.cu
 	nvcc *.cu -o $@

@@ -1,0 +1,6 @@
+#ifndef IO_HU
+#define IO_HU
+
+void read_input(char **aInput, unsigned int **aIndices, unsigned int *aSize, unsigned int *aNum);
+
+#endif

@@ -1,6 +1,7 @@
 file:
   inputFilepath: 'words.txt'
   outputFilepath: '../input/input.txt'
+  metadataFilepath: '../input/input_metadata.txt'
 parameters:
   bankSize: 100
   outputSize: 10000
