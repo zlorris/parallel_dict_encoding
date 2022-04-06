@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 
+#include "io.hu"
+
 /**
  * @brief Reads input file "input.txt" in the /input directory
  *  into @param aInput. The file "input_metadata.txt" contains
@@ -36,7 +38,7 @@ void read_input(char **aInput, unsigned int **aIndices, unsigned int *aSize, uns
 
   // allocate input arrays
   *aInput = (char *)calloc(*aSize, sizeof(char));
-  *aIndices = (unsigned int *)calloc(*aNum, sizeof(unsigned int));
+  *aIndices = (unsigned int *)calloc(*aNum + 1, sizeof(unsigned int));
 
   if (aInput == nullptr || aIndices == nullptr)
   {
@@ -67,5 +69,9 @@ void read_input(char **aInput, unsigned int **aIndices, unsigned int *aSize, uns
 
     word_cnt++;
   }
+
+  // add a final entry to indices for the last word
+  (*aIndices)[word_cnt] = char_cnt;
+
   input_file.close();
 }

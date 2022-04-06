@@ -1,4 +1,6 @@
 #ifndef DECODING_HU
 #define DECODING_HU
 
+void manual_decode(unsigned int aNum);
+
 #endif

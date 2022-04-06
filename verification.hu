@@ -1,0 +1,6 @@
+#ifndef VERIFICATION_HU
+#define VERIFICATION_HU
+
+void manual_verify(unsigned int aNum);
+
+#endif
