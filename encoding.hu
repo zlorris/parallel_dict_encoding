@@ -1,7 +1,12 @@
 #ifndef ENCODING_HU
 #define ENCODING_HU
 
-__global__ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aNum);
+#include "hash_table.hu"
+
+__global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
+                                       unsigned int aNum, Table &table, Lock *lock);
+void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aNum);
+
 void manual_encode(char* aInput, unsigned int* aIndices, unsigned int aNum);
 
 #endif

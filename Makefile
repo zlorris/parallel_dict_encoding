@@ -1,4 +1,4 @@
 .SUFFIXES: .cu
 
 main: *.cu
-	nvcc *.cu -o $@
+	nvcc *.cu --relocatable-device-code=true -o $@

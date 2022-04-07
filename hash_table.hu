@@ -1,0 +1,51 @@
+#ifndef HASH_TABLE_HU
+#define HASH_TABLE_HU
+
+#include "./utility/error.hu"
+
+// type declarations
+struct Entry
+{
+  void *key;
+  size_t key_len;
+  void *value;
+  Entry *next;
+};
+
+struct Table
+{
+  Entry **entries;
+  Entry *pool;
+  size_t num_entries;
+  size_t num_elements;
+  bool reverse;
+};
+
+struct Lock {
+    int *mutex;
+    Lock( void ) {
+        HANDLE_ERROR(cudaMalloc((void**)&mutex, sizeof(int)));
+        HANDLE_ERROR(cudaMemset(mutex, 0, sizeof(int)));
+    }
+    ~Lock( void ) {
+        cudaFree( mutex );
+    }
+    __device__ void lock( void ) {
+        while( atomicCAS( mutex, 0, 1 ) != 0 );
+	__threadfence();
+    }
+    __device__ void unlock( void ) {
+        __threadfence();
+        atomicExch( mutex, 0 );
+    }
+};
+
+// function prototypes
+__device__ __host__ size_t hash(Table &table, void *key);
+void initialize_table(Table &table, size_t entries, size_t elements, bool reverse);
+void copy_table_to_host(const Table &table, Table &hostTable);
+void free_table(Table &table);
+__device__ void add_to_table(void *key, size_t key_len, void *value, Table& table, Lock *lock, int tid, void** result);
+__device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len);
+
+#endif
