@@ -1,4 +1,4 @@
 .SUFFIXES: .cu
 
-main: *.cu
-	nvcc *.cu --relocatable-device-code=true -o $@
+main: *.cu *.hu utility/error.hu
+	nvcc *.cu --relocatable-device-code=true -g -Xcompiler -rdynamic -lineinfo -o $@
