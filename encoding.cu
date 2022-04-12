@@ -9,9 +9,15 @@
 #define HASH_ENTRIES 1024
 
 __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
-                                       unsigned int aNum, Table &table, Lock *lock)
+                                       unsigned int aNum, Table *table)
 {
-  unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+  if (tid == 1)
+  {
+    initialize_table(table, HASH_ENTRIES, aNum, false);
+  }
+  __syncthreads();
 
   if (tid < aNum)
   {
@@ -22,9 +28,7 @@ __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
     unsigned int index;
     void *result = &index;
 
-    add_to_table(key, length, val, table, lock, tid, &result);
-
-    printf("%u\r\n", *(unsigned int *)result);
+    add_to_table(key, length, val, table, tid, &result);
   }
 
   __syncthreads();
@@ -40,19 +44,22 @@ __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
  */
 void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aNum)
 {
-  Table h_table, d_table;
+  Table *d_table;
 
-  // initialize device hash table
-  initialize_table(d_table, HASH_ENTRIES, aNum, false);
+  // initialize host hash table
+  // h_table = (Table *)malloc(sizeof(Table));
+  // initialize_table(h_table, HASH_ENTRIES, aNum, false);
 
-  // create a set of locks for the device hash table
-  Lock lock[HASH_ENTRIES];
-  Lock *d_lock;
-  cudaMalloc((void **)&d_lock, HASH_ENTRIES * sizeof(Lock));
-  cudaMemcpy(d_lock, lock, HASH_ENTRIES * sizeof(Lock), cudaMemcpyHostToDevice);
+  // create device table
+  cudaMalloc((void **)&d_table, sizeof(Table));
 
   // perform parallel encoding/decoding and verification
-  parallel_encode_kernel<<<ceil(aNum / 512.0), 512>>>(aInput, aIndices, aNum, d_table, d_lock);
+  parallel_encode_kernel<<<4, 32>>>(aInput, aIndices, aNum, d_table);
+
+  cudaError_t cudaerr = cudaDeviceSynchronize();
+  if (cudaerr != cudaSuccess) {
+    printf("kernel launch failed with error \"%s\".\n", cudaGetErrorString(cudaerr));
+  }
 
   // copy_table_to_host(d_table, h_table);
 
