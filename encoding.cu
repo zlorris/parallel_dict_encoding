@@ -9,18 +9,13 @@
 #define HASH_ENTRIES 1024
 
 __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
-                                       unsigned int aNum, Table *table)
+                                       unsigned int aNum, Table *table, Lock *locks)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
-  if (tid == 1)
-  {
-    initialize_table(table, HASH_ENTRIES, aNum, false);
-  }
-  __syncthreads();
-
   if (tid < aNum)
   {
+    // printf("tid: %d\r\n", tid);
     // make the key, value, and result
     unsigned int length = aIndices[tid + 1] - aIndices[tid];
     void *key = aInput + aIndices[tid];
@@ -28,10 +23,8 @@ __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
     unsigned int index;
     void *result = &index;
 
-    add_to_table(key, length, val, table, tid, &result);
+    add_to_table(key, length, val, table, locks, tid, &result);
   }
-
-  __syncthreads();
 }
 
 /**
@@ -44,21 +37,29 @@ __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
  */
 void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aNum)
 {
+  Table table;
   Table *d_table;
+  Lock locks[HASH_ENTRIES];
+  Lock *d_locks;
 
-  // initialize host hash table
-  // h_table = (Table *)malloc(sizeof(Table));
-  // initialize_table(h_table, HASH_ENTRIES, aNum, false);
-
-  // create device table
+  // initialize device table
+  initialize_table(table, HASH_ENTRIES, aNum, false);
   cudaMalloc((void **)&d_table, sizeof(Table));
+  cudaMemcpy(d_table, &table, sizeof(Table), cudaMemcpyHostToDevice);
+
+  // initialize device locks
+  cudaMalloc((void **)&d_locks, HASH_ENTRIES * sizeof(Lock));
+  cudaMemcpy(d_locks, locks, HASH_ENTRIES * sizeof(Lock), cudaMemcpyHostToDevice);
 
   // perform parallel encoding/decoding and verification
-  parallel_encode_kernel<<<4, 32>>>(aInput, aIndices, aNum, d_table);
+  parallel_encode_kernel<<<4, 32>>>(aInput, aIndices, aNum, d_table, d_locks);
 
+  // synchronize the host and device
   cudaError_t cudaerr = cudaDeviceSynchronize();
-  if (cudaerr != cudaSuccess) {
+  if (cudaerr != cudaSuccess)
+  {
     printf("kernel launch failed with error \"%s\".\n", cudaGetErrorString(cudaerr));
+    return;
   }
 
   // copy_table_to_host(d_table, h_table);
