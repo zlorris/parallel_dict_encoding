@@ -6,8 +6,6 @@
 #include "encoding.hu"
 #include "hash_table.hu"
 
-#define HASH_ENTRIES 1024
-
 /**
  * @brief Parallel encoding device kernel
  *
