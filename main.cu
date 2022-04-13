@@ -8,8 +8,8 @@
 
 int main(int argc, char *argv[])
 {
-  char *h_input = nullptr, *d_input = nullptr;
-  unsigned int *h_indices = nullptr, *d_indices = nullptr;
+  char *h_input = nullptr;
+  unsigned int *h_indices = nullptr;
 
   unsigned int input_size = 0;
   unsigned int input_num = 0;
@@ -25,14 +25,8 @@ int main(int argc, char *argv[])
 
   if (!strcmp(argv[1], "--parallel"))
   {
-    // copy input to device memory
-    cudaMalloc((void **)&d_input, input_size * sizeof(char));
-    cudaMemcpy(d_input, h_input, input_size * sizeof(char), cudaMemcpyHostToDevice);
-    cudaMalloc((void **)&d_indices, (input_num + 1) * sizeof(unsigned int));
-    cudaMemcpy(d_indices, h_indices, (input_num + 1) * sizeof(unsigned int), cudaMemcpyHostToDevice);
-
     // perform parallel encoding/decoding and verification
-    parallel_encode(d_input, d_indices, input_num);
+    parallel_encode(h_input, h_indices, input_size, input_num);
   }
   else if (!strcmp(argv[1], "--manual"))
   {
@@ -50,8 +44,6 @@ int main(int argc, char *argv[])
   // deallocate memory
   free(h_input);
   free(h_indices);
-  // cudaFree(d_input);
-  // cudaFree(d_indices);
 
   return 0;
 }

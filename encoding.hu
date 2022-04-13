@@ -3,10 +3,9 @@
 
 #include "hash_table.hu"
 
-__global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
-                                       unsigned int aNum, Table* table);
-void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aNum);
-
+__global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum, 
+                                        Table* table, Lock *locks, void** results);
+void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, unsigned int aNum);
 void manual_encode(char* aInput, unsigned int* aIndices, unsigned int aNum);
 
 #endif

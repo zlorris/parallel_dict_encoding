@@ -41,11 +41,11 @@ struct Table
 };
 
 // function prototypes
-__device__ __host__ size_t hash(Table* table, void *key);
+__device__ size_t hash(Table* table, void *key);
 void initialize_table(Table& table, size_t entries, size_t elements, bool reverse);
-__host__ void copy_table_to_host(const Table* table, Table* hostTable);
-__device__ __host__ void free_table(Table* table);
-__device__ void add_to_table(void *key, size_t key_len, void *value, Table* table, Lock* locks, int tid, void** result);
+void copy_table_to_host(const Table* table, Table* hostTable);
+void free_table(Table* table);
+__device__ void* add_to_table(size_t hash_value, void *key, size_t key_len, void *value, Table* table, Lock* locks, int tid);
 __device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len);
 
 #endif

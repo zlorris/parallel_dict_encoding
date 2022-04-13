@@ -4,7 +4,13 @@
 #include "hash_table.hu"
 #include "./utility/error.hu"
 
-__device__ __host__ size_t hash(Table *table, void *key)
+/**
+ * @brief Compute the hash value for an element's key
+ *
+ * @param table pointer to the device hash table
+ * @param key pointer to the element key
+ */
+__device__ size_t hash(Table *table, void *key)
 {
   if (table->reverse)
   {
@@ -29,6 +35,14 @@ __device__ __host__ size_t hash(Table *table, void *key)
   }
 }
 
+/**
+ * @brief Initialize the hash table
+ *
+ * @param table pointer to the hash table
+ * @param entries number of entries for the hash table
+ * @param elements number of elements for the hash table
+ * @param reverse encoding (false) or decoding (true)
+ */
 void initialize_table(Table &table, size_t entries, size_t elements, bool reverse)
 {
   table.num_entries = entries;
@@ -40,7 +54,13 @@ void initialize_table(Table &table, size_t entries, size_t elements, bool revers
   cudaMalloc((void **)&table.pool, elements * sizeof(Entry));
 }
 
-__host__ void copy_table_to_host(const Table *table, Table *hostTable)
+/**
+ * @brief Copy device hash table to the host
+ *
+ * @param table pointer to device hash table
+ * @param hostTable pointer to host hash table
+ */
+void copy_table_to_host(const Table *table, Table *hostTable)
 {
   hostTable->num_entries = table->num_entries;
   hostTable->num_elements = table->num_elements;
@@ -71,72 +91,73 @@ __host__ void copy_table_to_host(const Table *table, Table *hostTable)
   }
 }
 
-__device__ __host__ void free_table(Table *table)
+/**
+ * @brief Free table memory allocated on the device
+ *
+ * @param table pointer to the hash table object
+ */
+void free_table(Table *table)
 {
-  free(table->pool);
-  free(table->entries);
+  cudaFree(table->pool);
+  cudaFree(table->entries);
 }
 
-__device__ void add_to_table(void *key, size_t key_len, void *value,
-                             Table *table, Lock *locks, int tid, void **result)
+/**
+ * @brief Add a new element to the hash table
+ *
+ * @param hash_value hash value of the element key (0 - table->num_entries)
+ * @param key void pointer to the element key
+ * @param key_len length of the element key
+ * @param value void pointer to the element value
+ * @param table pointer to device hash table
+ * @param locks pointer to device locks
+ * @param tid thread ID
+ *
+ * @return value of the element's entry in the hash table
+ */
+__device__ void *add_to_table(size_t hash_value, void *key, size_t key_len, void *value,
+                              Table *table, Lock *locks, int tid)
 {
-
-  if (tid < table->num_elements)
+  // check to see if the key already has an entry
+  Entry *cur_entry = table->entries[hash_value];
+  while (cur_entry != 0)
   {
-    size_t hashValue = hash(table, key);
-
-    // check to see if the key already has an entry
-    Entry *cur_entry = table->entries[hashValue];
-
-    // printf("hashValue: %lu\r\n", hashValue);
-    // printf("table->entries[hashValue]: %lu\r\n", table->entries[hashValue]);
-
-    while (cur_entry != 0)
+    if (keys_equal(cur_entry->key, cur_entry->key_len, key, key_len))
     {
-      if (keys_equal(cur_entry->key, cur_entry->key_len, key, key_len))
-      {
-        break;
-      }
-      cur_entry = cur_entry->next;
+      break;
     }
+    cur_entry = cur_entry->next;
+  }
 
-    if (cur_entry != 0)
-    {
-      printf("entry exists\r\n");
-      // if an entry exists
-      *result = cur_entry->value;
-    }
-    else
-    {
-      // if no entry exists, make a new one
-      Entry *location = &(table->pool[tid]);
-      location->key = key;
-      location->key_len = key_len;
-      location->value = value;
-      *result = value;
+  if (cur_entry != 0)
+  {
+    // if an entry exists
+    return cur_entry->value;
+  }
+  else
+  {
+    // if no entry exists, make a new one
+    Entry *location = &(table->pool[tid]);
+    location->key = key;
+    location->key_len = key_len;
+    location->value = value;
 
-      // update the table - critical section
-      __syncthreads();
-      if (threadIdx.x == 0)
-      {
-        locks[hashValue].lock();
-      }
-      __syncthreads();
+    // update the table
+    location->next = table->entries[hash_value];
+    table->entries[hash_value] = location;
 
-      location->next = table->entries[hashValue];
-      table->entries[hashValue] = location;
-
-      __threadfence();
-      __syncthreads();
-      if (threadIdx.x == 0)
-      {
-        locks[hashValue].unlock();
-      }
-      __syncthreads();
-    }
+    return value;
   }
 }
 
+/**
+ * @brief Check if the keys of two elements are equal
+ *
+ * @param k1 pointer to the first element key
+ * @param k1_len length of the first element key
+ * @param k2 pointer to the second element key
+ * @param k2_len length of the second element key
+ */
 __device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len)
 {
   if (k1_len == 0 || k2_len == 0)
@@ -151,9 +172,6 @@ __device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len)
     char *k1_str = (char *)k1;
     char *k2_str = (char *)k2;
 
-    printf("k1_len: %lu\r\n", k1_len);
-    printf("k2_len: %lu\r\n", k2_len);
-
     if (k1_len != k2_len)
     {
       return false;
@@ -161,8 +179,6 @@ __device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len)
 
     for (size_t i = 0; i < k1_len; ++i)
     {
-      printf("k1_str[i]: %c\r\n", k1_str[i]);
-      printf("k2_str[i]: %c\r\n", k2_str[i]);
       if (k1_str[i] != k2_str[i])
       {
         return false;
