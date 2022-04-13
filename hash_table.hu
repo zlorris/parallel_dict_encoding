@@ -14,8 +14,8 @@ struct Lock {
         cudaFree( mutex );
     }
     __device__ void lock( void ) {
-        while( atomicCAS( mutex, 0, 1 ) != 0 );
-	__threadfence();
+        while (atomicCAS( mutex, 0, 1 ) != 0 );
+	    __threadfence();
     }
     __device__ void unlock( void ) {
         __threadfence();

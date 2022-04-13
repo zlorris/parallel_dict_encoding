@@ -15,7 +15,6 @@ __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices,
 
   if (tid < aNum)
   {
-    // printf("tid: %d\r\n", tid);
     // make the key, value, and result
     unsigned int length = aIndices[tid + 1] - aIndices[tid];
     void *key = aInput + aIndices[tid];

@@ -40,14 +40,6 @@ int main(int argc, char *argv[])
     manual_encode(h_input, h_indices, input_num);
     manual_decode(input_num);
     manual_verify(input_num);
-
-    for (unsigned int i = 0; i < input_num; ++i)
-    {
-      for (unsigned int j = h_indices[i]; j < h_indices[i + 1]; ++j)
-      {
-        std::cout << h_input[j] << std::endl;
-      }
-    }
   }
   else
   {

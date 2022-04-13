@@ -80,20 +80,24 @@ __device__ __host__ void free_table(Table *table)
 __device__ void add_to_table(void *key, size_t key_len, void *value,
                              Table *table, Lock *locks, int tid, void **result)
 {
+
   if (tid < table->num_elements)
   {
     size_t hashValue = hash(table, key);
 
     // check to see if the key already has an entry
     Entry *cur_entry = table->entries[hashValue];
+
+    // printf("hashValue: %lu\r\n", hashValue);
+    // printf("table->entries[hashValue]: %lu\r\n", table->entries[hashValue]);
+
     while (cur_entry != 0)
     {
-      printf("looping\r\n");
-
       if (keys_equal(cur_entry->key, cur_entry->key_len, key, key_len))
       {
         break;
       }
+      cur_entry = cur_entry->next;
     }
 
     if (cur_entry != 0)
@@ -110,12 +114,25 @@ __device__ void add_to_table(void *key, size_t key_len, void *value,
       location->key_len = key_len;
       location->value = value;
       *result = value;
-      locks[hashValue].lock();
-      printf("locked\r\n");
+
+      // update the table - critical section
+      __syncthreads();
+      if (threadIdx.x == 0)
+      {
+        locks[hashValue].lock();
+      }
+      __syncthreads();
+
       location->next = table->entries[hashValue];
       table->entries[hashValue] = location;
-      locks[hashValue].unlock();
-      printf("unlocked\r\n");
+
+      __threadfence();
+      __syncthreads();
+      if (threadIdx.x == 0)
+      {
+        locks[hashValue].unlock();
+      }
+      __syncthreads();
     }
   }
 }
@@ -134,6 +151,9 @@ __device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len)
     char *k1_str = (char *)k1;
     char *k2_str = (char *)k2;
 
+    printf("k1_len: %lu\r\n", k1_len);
+    printf("k2_len: %lu\r\n", k2_len);
+
     if (k1_len != k2_len)
     {
       return false;
@@ -141,6 +161,8 @@ __device__ bool keys_equal(void *k1, size_t k1_len, void *k2, size_t k2_len)
 
     for (size_t i = 0; i < k1_len; ++i)
     {
+      printf("k1_str[i]: %c\r\n", k1_str[i]);
+      printf("k2_str[i]: %c\r\n", k2_str[i]);
       if (k1_str[i] != k2_str[i])
       {
         return false;
