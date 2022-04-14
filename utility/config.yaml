@@ -3,5 +3,5 @@ file:
   outputFilepath: '../input/input.txt'
   metadataFilepath: '../input/input_metadata.txt'
 parameters:
-  bankSize: 50
-  outputSize: 100
+  bankSize: 5000
+  outputSize: 10000

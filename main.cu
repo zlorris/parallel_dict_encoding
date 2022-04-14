@@ -11,8 +11,7 @@ int main(int argc, char *argv[])
   char *h_input = nullptr;
   unsigned int *h_indices = nullptr;
 
-  unsigned int input_size = 0;
-  unsigned int input_num = 0;
+  unsigned int input_size = 0, input_num = 0;
 
   if (argc != 2)
   {
@@ -21,19 +20,21 @@ int main(int argc, char *argv[])
   }
 
   // read the input into host memory
-  read_input(&h_input, &h_indices, &input_size, &input_num);
+  read_input("./input/input.txt", "./input/input_metadata.txt", &h_input, &h_indices, &input_size, &input_num);
 
   if (!strcmp(argv[1], "--parallel"))
   {
     // perform parallel encoding/decoding and verification
     parallel_encode(h_input, h_indices, input_size, input_num);
+    parallel_decode();
+    verify("./output/decoded_parallel.txt", "./input/input.txt", input_num);
   }
   else if (!strcmp(argv[1], "--manual"))
   {
     // perform manual encoding/decoding and verification
     manual_encode(h_input, h_indices, input_num);
     manual_decode(input_num);
-    manual_verify(input_num);
+    verify("./output/decoded_manual.txt", "./input/input.txt", input_num);
   }
   else
   {

@@ -1,6 +1,7 @@
 #ifndef IO_HU
 #define IO_HU
 
-void read_input(char **aInput, unsigned int **aIndices, unsigned int *aSize, unsigned int *aNum);
+void read_input(const char *i_file, const char *m_file, char **aInput,
+                unsigned int **aIndices, unsigned int *aSize, unsigned int *aNum);
 
 #endif

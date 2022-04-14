@@ -6,28 +6,28 @@
 #include "verification.hu"
 
 /**
- * @brief Verifies that the manually decoded file "decoded_manual.txt" in the
- *  /output directory is the same as the original input file "input.txt" in the
- *  /input directory.
+ * @brief Verifies that the decoded file is the same as the input file
  *
- * @param aNum number of words in the input.
+ * @param d_file decoded filename
+ * @param i_file input filename
+ * @param aNum number of words in the files
  */
-void manual_verify(unsigned int aNum)
+void verify(const char *d_file, const char *i_file, unsigned int aNum)
 {
   std::string dec_word, ref_word;
 
   // open the manual decoded file
-  std::ifstream decoded_file("./output/decoded_manual.txt");
+  std::ifstream decoded_file(d_file);
   if (!decoded_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open decoded file for manual verification!" << std::endl;
+    std::cerr << "ERROR: Unable to open decoded file for verification!" << std::endl;
   }
 
   // open the original input file
-  std::ifstream input_file("./input/input.txt");
+  std::ifstream input_file(i_file);
   if (!input_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open original input file for manual verification!" << std::endl;
+    std::cerr << "ERROR: Unable to open input file for verification!" << std::endl;
   }
 
   // verify that the decoded file is the same as the input file

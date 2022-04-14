@@ -3,6 +3,8 @@
 
 #include "./utility/error.hu"
 
+#define HASH_ENTRIES 4096
+
 // type declarations
 struct Lock {
     int *mutex;

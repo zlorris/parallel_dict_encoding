@@ -1,6 +1,6 @@
 #ifndef VERIFICATION_HU
 #define VERIFICATION_HU
 
-void manual_verify(unsigned int aNum);
+void verify(const char* d_file, const char* i_file, unsigned int aNum);
 
 #endif

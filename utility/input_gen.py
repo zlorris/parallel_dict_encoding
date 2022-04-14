@@ -39,8 +39,7 @@ if __name__ == "__main__":
 
     # write output file
     with open(config['file']['outputFilepath'], 'w') as out_file:
-        for word in words_chosen:
-            out_file.write(word)
+        out_file.writelines(words_chosen)
 
     # write output metadata file
     with open(config['file']['metadataFilepath'], 'w') as metadata_file:

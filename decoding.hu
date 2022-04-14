@@ -1,6 +1,11 @@
 #ifndef DECODING_HU
 #define DECODING_HU
 
+#include "hash_table.hu"
+
+__global__ void parallel_decode_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum, 
+                                        Table* table, Lock *locks, unsigned int* results);
+void parallel_decode();
 void manual_decode(unsigned int aNum);
 
 #endif

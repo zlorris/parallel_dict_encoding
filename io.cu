@@ -5,27 +5,30 @@
 #include "io.hu"
 
 /**
- * @brief Reads input file "input.txt" in the /input directory
- *  into @param aInput. The file "input_metadata.txt" contains
- *  information on the number of characters and number of words,
- *  which are stored in @param aSize and @param aNum, respectively.
+ * @brief Reads input file @param i_file into @param aInput. The
+ *  metadata file @param m_file contains information on the number of
+ *  characters  and number of words,  which are stored in @param aSize
+ *  and @param aNum, respectively.
  *
+ * @param i_file input filename
+ * @param m_file metadata filename
  * @param aInput pointer to flattened input character array
  * @param aIndices pointer to array of indices in flattened array for each word
  * @param aSize pointer to number of characters in the input
  * @param aNum pointer to number of words in the input
  *
  **/
-void read_input(char **aInput, unsigned int **aIndices, unsigned int *aSize, unsigned int *aNum)
+void read_input(const char *i_file, const char *m_file, char **aInput,
+                unsigned int **aIndices, unsigned int *aSize, unsigned int *aNum)
 {
   std::string line;
   unsigned int char_cnt = 0, word_cnt = 0;
 
   // open the metadata file
-  std::ifstream metadata_file("./input/input_metadata.txt");
+  std::ifstream metadata_file(m_file);
   if (!metadata_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open input metadata file!" << std::endl;
+    std::cerr << "ERROR: Unable to open metadata file!" << std::endl;
     exit(1);
   }
 
@@ -47,7 +50,7 @@ void read_input(char **aInput, unsigned int **aIndices, unsigned int *aSize, uns
   }
 
   // open the input file
-  std::ifstream input_file("./input/input.txt");
+  std::ifstream input_file(i_file);
   if (!input_file.is_open())
   {
     std::cerr << "ERROR: Unable to open input file!" << std::endl;

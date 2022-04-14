@@ -84,8 +84,8 @@ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, u
   cudaMalloc((void **)&d_locks, HASH_ENTRIES * sizeof(Lock));
   cudaMemcpy(d_locks, h_locks, HASH_ENTRIES * sizeof(Lock), cudaMemcpyHostToDevice);
 
-  // perform parallel encoding/decoding and verification
-  parallel_encode_kernel<<<4, 32>>>(d_input, d_indices, aNum, d_table, d_locks, d_results);
+  // launch parallel encoding kernel
+  parallel_encode_kernel<<<ceil(aNum / 64.0), 64>>>(d_input, d_indices, aNum, d_table, d_locks, d_results);
 
   // synchronize the host and device
   cudaError_t cudaerr = cudaDeviceSynchronize();
@@ -106,20 +106,35 @@ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, u
     exit(1);
   }
 
+  // open the output metadata file
+  std::ofstream metadata_file("./output/encoded_parallel_metadata.txt");
+  if (!metadata_file.is_open())
+  {
+    std::cerr << "ERROR: Unable to open metadata file for parallel encoding!" << std::endl;
+  }
+
+  unsigned int char_cnt = 0, word_cnt = 0;
   // write results to the output file
   for (unsigned int i = 0; i < aNum; ++i)
   {
+    std::string word;
     if (h_results[i] == i)
     {
-      std::string word(aInput + aIndices[i], aInput + aIndices[i + 1]);
-      output_file << word << std::endl;
+      word = std::string(aInput + aIndices[i], aInput + aIndices[i + 1]);
     }
     else
     {
-      output_file << h_results[i] << std::endl;
+      word = std::to_string(h_results[i]);
     }
+    char_cnt += word.size();
+    output_file << word << std::endl;
+    word_cnt++;
   }
 
+  metadata_file << char_cnt << std::endl;
+  metadata_file << word_cnt << std::endl;
+
+  metadata_file.close();
   output_file.close();
 
   // deallocate memory
@@ -128,6 +143,7 @@ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, u
   cudaFree(d_indices);
   cudaFree(d_locks);
   cudaFree(d_table);
+  cudaFree(d_results);
   free(h_results);
 }
 
@@ -145,7 +161,7 @@ void manual_encode(char *aInput, unsigned int *aIndices, unsigned int aNum)
   std::ofstream output_file("./output/encoded_manual.txt");
   if (!output_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open the output file for manual encoding!" << std::endl;
+    std::cerr << "ERROR: Unable to open output file for manual encoding!" << std::endl;
     exit(1);
   }
 
