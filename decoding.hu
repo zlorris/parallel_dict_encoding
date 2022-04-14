@@ -6,6 +6,6 @@
 __global__ void parallel_decode_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum, 
                                         Table* table, Lock *locks, unsigned int* results);
 void parallel_decode();
-void manual_decode(unsigned int aNum);
+void serial_decode(unsigned int aNum);
 
 #endif

@@ -148,20 +148,20 @@ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, u
 }
 
 /**
- * @brief Manually encodes input data to file "encoded_manual.txt" in the
+ * @brief Serially encodes input data to file "encoded_ma.txt" in the
  *  /output directory.
  *sd array for each word
  * @param aNum number of words in the input
  */
-void manual_encode(char *aInput, unsigned int *aIndices, unsigned int aNum)
+void serial_encode(char *aInput, unsigned int *aIndices, unsigned int aNum)
 {
   std::unordered_map<std::string, unsigned int> dict;
 
   // open the output file
-  std::ofstream output_file("./output/encoded_manual.txt");
+  std::ofstream output_file("./output/encoded_serial.txt");
   if (!output_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open output file for manual encoding!" << std::endl;
+    std::cerr << "ERROR: Unable to open output file for serial encoding!" << std::endl;
     exit(1);
   }
 

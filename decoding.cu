@@ -169,29 +169,29 @@ void parallel_decode()
 }
 
 /**
- * @brief Manually decodes encoded data file "encoded_manual.txt" into
- *  the file "decoded_manual.txt" in the /output directory.
+ * @brief Serially decodes encoded data file "encoded_serial.txt" into
+ *  the file "decoded_serial.txt" in the /output directory.
  *
  * @param aNum number of words in the input
  */
-void manual_decode(unsigned int aNum)
+void serial_decode(unsigned int aNum)
 {
   std::unordered_map<unsigned int, std::string> reverse_dict;
   std::string word;
 
   // open the input file
-  std::ifstream input_file("./output/encoded_manual.txt");
+  std::ifstream input_file("./output/encoded_serial.txt");
   if (!input_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open the input file for manual decoding!" << std::endl;
+    std::cerr << "ERROR: Unable to open the input file for serial decoding!" << std::endl;
     exit(1);
   }
 
   // open the output file
-  std::ofstream output_file("./output/decoded_manual.txt");
+  std::ofstream output_file("./output/decoded_serial.txt");
   if (!output_file.is_open())
   {
-    std::cerr << "ERROR: Unable to open output file for manual decoding!" << std::endl;
+    std::cerr << "ERROR: Unable to open output file for serial decoding!" << std::endl;
   }
 
   // decode the input to the output file

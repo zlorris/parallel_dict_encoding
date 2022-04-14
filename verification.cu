@@ -16,7 +16,7 @@ void verify(const char *d_file, const char *i_file, unsigned int aNum)
 {
   std::string dec_word, ref_word;
 
-  // open the manual decoded file
+  // open the decoded file
   std::ifstream decoded_file(d_file);
   if (!decoded_file.is_open())
   {

@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
   if (argc != 2)
   {
-    std::cerr << "ERROR: Usage - ./main [--parallel, --manual]" << std::endl;
+    std::cerr << "ERROR: Usage - ./main [--parallel, --serial]" << std::endl;
     exit(1);
   }
 
@@ -29,16 +29,16 @@ int main(int argc, char *argv[])
     parallel_decode();
     verify("./output/decoded_parallel.txt", "./input/input.txt", input_num);
   }
-  else if (!strcmp(argv[1], "--manual"))
+  else if (!strcmp(argv[1], "--serial"))
   {
-    // perform manual encoding/decoding and verification
-    manual_encode(h_input, h_indices, input_num);
-    manual_decode(input_num);
-    verify("./output/decoded_manual.txt", "./input/input.txt", input_num);
+    // perform serial encoding/decoding and verification
+    serial_encode(h_input, h_indices, input_num);
+    serial_decode(input_num);
+    verify("./output/decoded_serial.txt", "./input/input.txt", input_num);
   }
   else
   {
-    std::cerr << "ERROR: Usage - ./main [parallel, manual]" << std::endl;
+    std::cerr << "ERROR: Usage - ./main [parallel, serial]" << std::endl;
     exit(1);
   }
 
