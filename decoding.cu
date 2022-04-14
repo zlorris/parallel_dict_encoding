@@ -23,8 +23,18 @@ namespace
   }
 }
 
-__global__ void parallel_decode_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum,
-                                       Table *table, Lock *locks, unsigned int *results)
+/**
+ * @brief Parallel decoding kernel - builds hash table
+ *
+ * @param aInput flattened input character array on the device
+ * @param aIndices array of indices in flattened array for each word on the device
+ * @param aNum number of the words in the input
+ * @param table pointer to device hash table
+ * @param locks pointer to device hash table locks
+ * @param results array of encoded indices on the device
+ */
+__global__ void parallel_decode_build_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum,
+                                             Table *table, Lock *locks, unsigned int *results)
 {
   unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
   int stride = blockDim.x * gridDim.x;
@@ -53,10 +63,23 @@ __global__ void parallel_decode_kernel(char *aInput, unsigned int *aIndices, uns
 
     tid += stride;
   }
+}
 
-  __syncthreads();
-
-  tid = threadIdx.x + blockIdx.x * blockDim.x;
+/**
+ * @brief Parallel decoding kernel - looks up words in hash table
+ *
+ * @param aInput flattened input character array on the device
+ * @param aIndices array of indices in flattened array for each word on the device
+ * @param aNum number of the words in the input
+ * @param table pointer to device hash table
+ * @param locks pointer to device hash table locks
+ * @param results array of encoded indices on the device
+ */
+__global__ void parallel_decode_lookup_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum,
+                                              Table *table, Lock *locks, unsigned int *results)
+{
+  unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  int stride = blockDim.x * gridDim.x;
 
   while (tid < aNum)
   {
@@ -88,7 +111,6 @@ __global__ void parallel_decode_kernel(char *aInput, unsigned int *aIndices, uns
     tid += stride;
   }
 }
-
 void parallel_decode()
 {
   char *h_input, *d_input;
@@ -122,8 +144,11 @@ void parallel_decode()
   cudaMalloc((void **)&d_locks, HASH_ENTRIES * sizeof(Lock));
   cudaMemcpy(d_locks, h_locks, HASH_ENTRIES * sizeof(Lock), cudaMemcpyHostToDevice);
 
-  // launch parallel decoding kernel
-  parallel_decode_kernel<<<ceil(input_num / 64.0), 64>>>(d_input, d_indices, input_num, d_table, d_locks, d_results);
+  // launch parallel decoding build kernel
+  parallel_decode_build_kernel<<<ceil(input_num / 64.0), 64>>>(d_input, d_indices, input_num, d_table, d_locks, d_results);
+
+  // launch parallel decoding lookup kernel
+  parallel_decode_lookup_kernel<<<ceil(input_num / 64.0), 64>>>(d_input, d_indices, input_num, d_table, d_locks, d_results);
 
   // synchronize the host and device
   cudaError_t cudaerr = cudaDeviceSynchronize();
