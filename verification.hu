@@ -1,6 +1,8 @@
 #ifndef VERIFICATION_HU
 #define VERIFICATION_HU
+#include <string>
 
+void custom_assert (std::string word1, std::string word2, unsigned int line);
 void verify(const char* d_file, const char* i_file, unsigned int aNum);
 
 #endif
