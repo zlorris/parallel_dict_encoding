@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <omp.h>
 
 #include "encoding.hu"
 #include "hash_table.hu"
@@ -145,6 +147,61 @@ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, u
   cudaFree(d_table);
   cudaFree(d_results);
   free(h_results);
+}
+
+/**
+ * @brief Parallel encodes input data to file "encoded_parallel_cpu.txt" in the
+ *  /output directory - Uses OpenMP, running on the CPU
+ *
+ * @param aInput flattened input character array on the host
+ * @param aIndices array of indices in flattened array for each word on the host
+ * @param aSize number of characters in the input
+ * @param aNum number of words in the input
+ * @param cpu_threads desired number of threads for parallel CPU encoding/decoding
+ */
+void parallel_cpu_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, unsigned int aNum, unsigned int cpu_threads)
+{
+
+  std::unordered_map<std::string, unsigned int> dict;
+  std::vector<std::string> temp_output(aNum);
+
+  // open the output file
+  std::ofstream output_file("./output/encoded_parallel_cpu.txt");
+  if (!output_file.is_open())
+  {
+    std::cerr << "ERROR: Unable to open output file for parallel CPU encoding!" << std::endl;
+    exit(1);
+  }
+
+  // encode the input
+  omp_set_num_threads(cpu_threads);
+  #pragma omp parallel for 
+  for (unsigned int i = 0; i < aNum; ++i)
+  {
+    std::string word(aInput + aIndices[i], aInput + aIndices[i + 1]);
+
+    auto result = dict.find(word);
+
+    if (result == dict.end())
+    {
+      #pragma omp critical
+      dict.insert(std::make_pair(word, i));
+      temp_output[i] = word;
+    }
+    else
+    {
+      temp_output[i] = std::to_string(result->second);
+    }
+  }
+
+  // write encoded data serially to output file
+  for (unsigned int i = 0; i < aNum; ++i)
+  {
+    output_file << temp_output[i] << std::endl;
+  }
+
+  output_file.close();
+
 }
 
 /**

@@ -8,6 +8,7 @@ __global__ void parallel_decode_build_kernel(char *aInput, unsigned int *aIndice
 __global__ void parallel_decode_lookup_kernel(char *aInput, unsigned int* aIndices, unsigned int aNum,
                                         Table* table, Lock *locks, unsigned int* results);
 void parallel_decode();
+void parallel_cpu_decode(unsigned int aNum, unsigned int cpu_threads);
 void serial_decode(unsigned int aNum);
 
 #endif

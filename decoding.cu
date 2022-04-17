@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <omp.h>
 
 #include "decoding.hu"
 #include "hash_table.hu"
@@ -191,6 +193,75 @@ void parallel_decode()
   free(h_input);
   free(h_indices);
   free(h_results);
+}
+
+/**
+ * @brief Decodes encoded data file "encoded_parallel_cpu.txt" into
+ *  the file "decoded_parallel_cpu.txt" in the /output directory.
+ *
+ * @param aNum number of words in the input
+ * @param cpu_threads desired number of threads for parallel CPU encoding/decoding
+ */
+void parallel_cpu_decode(unsigned int aNum, unsigned int cpu_threads)
+{
+
+  std::unordered_map<unsigned int, std::string> reverse_dict;
+  std::string word;
+  std::vector<std::string> temp_input(aNum);
+  std::vector<std::string> temp_output(aNum);
+
+  // open the input file
+  std::ifstream input_file("./output/encoded_parallel_cpu.txt");
+  if (!input_file.is_open())
+  {
+    std::cerr << "ERROR: Unable to open the input file for serial decoding!" << std::endl;
+    exit(1);
+  }
+
+  // open the output file
+  std::ofstream output_file("./output/decoded_parallel_cpu.txt");
+  if (!output_file.is_open())
+  {
+    std::cerr << "ERROR: Unable to open output file for serial decoding!" << std::endl;
+  }
+
+  // build reverse dictionary
+  for (unsigned int i = 0; i < aNum; ++i)
+  {
+    std::getline(input_file, word);
+    if (isNumber(word) == false) 
+    {
+      reverse_dict.insert(std::make_pair(i, word));
+    }
+    temp_input[i] = word;
+  }
+
+  // decode
+  omp_set_num_threads(cpu_threads);
+  #pragma omp parallel for 
+  for (unsigned int i = 0; i < aNum; ++i)
+  {
+
+    if (isNumber(temp_input[i]))
+    {
+      temp_output[i] = reverse_dict.find(std::stoul(temp_input[i]))->second;
+    }
+    else
+    {
+      temp_output[i] = temp_input[i];
+    }
+
+  }
+
+  // write decoded data serially to output file
+  for (unsigned int i = 0; i < aNum; ++i)
+  {
+    output_file << temp_output[i] << std::endl;
+  }
+
+  input_file.close();
+  output_file.close();
+
 }
 
 /**
