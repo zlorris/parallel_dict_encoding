@@ -16,7 +16,7 @@ To generate input files, adjust the parameters in the _utility/config.yaml_ file
   * `bankSize`: number of unique words to choose from the input to form a word bank
   * `outputSize`: number of words to select from the word bank
   
-Run the _utility/input_gen.py_ with these parameters.
+Run the _utility/input_gen.py_ sccript with these parameters.
 
 ### Program
 To compile, use `make` with the provided *Makefile*.
