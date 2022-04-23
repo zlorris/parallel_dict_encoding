@@ -155,11 +155,10 @@ void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, u
  *
  * @param aInput flattened input character array on the host
  * @param aIndices array of indices in flattened array for each word on the host
- * @param aSize number of characters in the input
  * @param aNum number of words in the input
  * @param cpu_threads desired number of threads for parallel CPU encoding/decoding
  */
-void parallel_cpu_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, unsigned int aNum, unsigned int cpu_threads)
+void parallel_cpu_encode(char *aInput, unsigned int *aIndices, unsigned int aNum, unsigned int cpu_threads)
 {
 
   std::unordered_map<std::string, unsigned int> dict;
@@ -175,12 +174,14 @@ void parallel_cpu_encode(char *aInput, unsigned int *aIndices, unsigned int aSiz
 
   // encode the input
   omp_set_num_threads(cpu_threads);
-  #pragma omp parallel for 
+  std::unordered_map<std::string,unsigned int>::iterator result;
+  #pragma omp parallel for private(result)
   for (unsigned int i = 0; i < aNum; ++i)
   {
     std::string word(aInput + aIndices[i], aInput + aIndices[i + 1]);
-
-    auto result = dict.find(word);
+    
+    #pragma omp critical
+    result = dict.find(word);
 
     if (result == dict.end())
     {
