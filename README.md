@@ -1,11 +1,28 @@
 # parallel_dict_encoding
 
 ## Project
-Parallelized Dictionary Encoding - APCE Final Project Spring 2022</br>
-Zach Orris and Cohen Davis
+***Title:*** Parallelized Dictionary Encoding </br>
+***Class:*** ECSE 4740: Applied Parallel Computing for Engineers - Spring 2022</br>
+***Contributors***: Zach Orris and Cohen Davis
 
 ## Instructions
-To compile, use `make` with the provided *Makefile*.</br>
+### Input Generation
+To generate input files, adjust the parameters in the _utility/config.yaml_ file:
+* `file`
+  * `inputFilepath`: file path for list of input words
+  * `outputFilepath`: file path for output words
+  * `metadataFilepath`: file path for metadata of output words
+* `parameters`
+  * `bankSize`: number of unique words to choose from the input to form a word bank
+  * `outputSize`: number of words to select from the word bank
+  
+Run the _utility/input_gen.py_ script with these parameters.
+
+### Program
+To compile, use `make` with the provided *Makefile*.
 To run, use one of the following:
-* `./main --parallel` - Perform parallel encoding/decoding and verification
+* `./main --parallel` - Perform parallel encoding/decoding (on the GPU) and verification
+* `./main --parallel_cpu` - Perform parallel encoding/decoding (on the CPU) and verification
 * `./main --serial` - Perform serial encoding/decoding and verification
+
+### Peformance Analysis
