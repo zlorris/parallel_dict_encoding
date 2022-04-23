@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   {
     // perform parallel encoding/decoding and verification on the CPU
     start_time = std::chrono::high_resolution_clock::now();
-    parallel_cpu_encode(h_input, h_indices, input_size, input_num, CPU_THREADS);
+    parallel_cpu_encode(h_input, h_indices, input_num, CPU_THREADS);
     end_time = std::chrono::high_resolution_clock::now();
     parallel_cpu_decode(input_num, CPU_THREADS);
     verify("./output/decoded_parallel_cpu.txt", "./input/input.txt", input_num);

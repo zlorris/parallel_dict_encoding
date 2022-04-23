@@ -6,7 +6,7 @@
 __global__ void parallel_encode_kernel(char *aInput, unsigned int *aIndices, unsigned int aNum, 
                                         Table* table, Lock *locks, unsigned int* results);
 void parallel_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, unsigned int aNum);
-void parallel_cpu_encode(char *aInput, unsigned int *aIndices, unsigned int aSize, unsigned int aNum, unsigned int cpu_threads);
+void parallel_cpu_encode(char *aInput, unsigned int *aIndices, unsigned int aNum, unsigned int cpu_threads);
 void serial_encode(char* aInput, unsigned int* aIndices, unsigned int aNum);
 
 #endif
