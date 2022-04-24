@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
-#define CPU_THREADS 2
+#define CPU_THREADS 4
 
 int main(int argc, char *argv[])
 {
