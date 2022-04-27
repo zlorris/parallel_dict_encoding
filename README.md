@@ -25,4 +25,4 @@ To run, use one of the following:
 * `./main --parallel_cpu` - Perform parallel encoding/decoding (on the CPU) and verification
 * `./main --serial` - Perform serial encoding/decoding and verification
 
-Note: While the parallel_cpu encoding has been configured to utilize the ideal number of threads for the files tested, one can change this number of threads by simply editing the number associated with the "#define CPU_THREADS" statement in main.cu.
+Note: While the parallel_cpu encoding has been configured to utilize the ideal number of threads for the files tested, one can change this number of threads by simply editing the number associated with the `#define CPU_THREADS` statement in main.cu.
